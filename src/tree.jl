@@ -59,28 +59,20 @@ function expand!(D::DESPOT, b::Int, p::DESPOTPlanner)
     odict = OrderedDict{O, Int}()
 
     belief = get_belief(D, b, p.rs)
-    # @show length(actions(p.pomdp, belief))
-    # @show n_scen = 0
-    # @show n_term = 0
     for a in actions(p.pomdp, belief)
         empty!(odict)
         rsum = 0.0
-        # @show n_scen += length(D.scenarios[b])
         for scen in D.scenarios[b]
-            # @show scen
             rng = get_rng(p.rs, first(scen), D.Delta[b])
             s = last(scen)
-            # @show n_term += isterminal(p.pomdp, s)
             if !isterminal(p.pomdp, s)
                 sp, o, r = @gen(:sp, :o, :r)(p.pomdp, s, a, rng)
-                # @show sp, o, r
                 rsum += r
-                # @info odict
+                
                 bp = get(odict, o, 0)
                 if bp == 0
                     push!(D.scenarios, Vector{Pair{Int, S}}())
                     bp = length(D.scenarios)
-                    # @show bp
                     odict[o] = bp
                 end
                 push!(D.scenarios[bp], first(scen)=>sp)
@@ -104,10 +96,7 @@ function expand!(D::DESPOT, b::Int, p::DESPOTPlanner)
             D.Delta[bp] = D.Delta[b]+1
 
             scenario_belief = get_belief(D, bp, p.rs)
-            # @info scenario_belief.scenarios
-            # @info scenario_belief
             L_0, U_0 = bounds(p.bounds, p.pomdp, scenario_belief)
-            # @show L_0, U_0
 
             if p.sol.bounds_warnings
                 bounds_sanity_check(p.pomdp, scenario_belief, L_0, U_0)

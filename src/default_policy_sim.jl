@@ -51,10 +51,7 @@ function rollout(pomdp::POMDP, policy::Policy, b0::ScenarioBelief, steps::Intege
         a = action(policy, b)
 
         rng = get_rng(b.random_source, k, b.depth)
-        # @show typeof(rng)
-        # @show rand(rng)
         sp, o, r = @gen(:sp, :o, :r)(pomdp, s, a, rng)
-        # @info (sp, o, r)
 
         r_total += disc*r
 
@@ -65,7 +62,6 @@ function rollout(pomdp::POMDP, policy::Policy, b0::ScenarioBelief, steps::Intege
         disc *= discount(pomdp)
         steps -= 1
     end
-    # @show r_total
 
     if steps == 0 && !isterminal(pomdp, s)
         r_total += disc*fval(pomdp, b)
