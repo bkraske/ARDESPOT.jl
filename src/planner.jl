@@ -16,14 +16,20 @@ function build_despot(p::DESPOTPlanner, b_0)
 end
 
 function explore!(D::DESPOT, b::Int, p::DESPOTPlanner)
+    i = 0
+    # println("hello")
     while D.Delta[b] <= p.sol.D &&
         excess_uncertainty(D, b, p) > 0.0 &&
         !prune!(D, b, p)
-
+        # @show excess_uncertainty(D, b, p) > 0.0
         if isempty(D.children[b]) # a leaf
             expand!(D, b, p)
         end
         b = next_best(D, b, p)
+        # i += 1
+        # if i == 1
+        #     break
+        # end
     end
     if D.Delta[b] > p.sol.D
         make_default!(D, b)
@@ -126,9 +132,11 @@ function next_best(D::DESPOT, b::Int, p::DESPOTPlanner)
             best_ba = ba
         end
     end
+    # @show best_ba
 
     max_eu = -Inf
     best_bp = first(D.ba_children[best_ba])
+    # @show D.ba_children[best_ba]
     for bp in D.ba_children[best_ba]
         eu = excess_uncertainty(D, bp, p)
         if eu > max_eu
@@ -136,6 +144,7 @@ function next_best(D::DESPOT, b::Int, p::DESPOTPlanner)
             best_bp = bp
         end
     end
+    # @show best_bp
 
     return best_bp
 

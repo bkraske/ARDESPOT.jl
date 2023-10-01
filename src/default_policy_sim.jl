@@ -1,7 +1,7 @@
 function branching_sim(pomdp::POMDP, policy::Policy, b::ScenarioBelief, steps::Integer, fval)
     S = statetype(pomdp)
     O = obstype(pomdp)
-    odict = Dict{O, Vector{Pair{Int, S}}}()
+    odict = OrderedDict{O, Vector{Pair{Int, S}}}()
 
     if steps <= 0
         return length(b.scenarios)*fval(pomdp, b)
@@ -14,7 +14,6 @@ function branching_sim(pomdp::POMDP, policy::Policy, b::ScenarioBelief, steps::I
         if !isterminal(pomdp, s)
             rng = get_rng(b.random_source, k, b.depth)
             sp, o, r = @gen(:sp, :o, :r)(pomdp, s, a, rng)
-
             if haskey(odict, o)
                 push!(odict[o], k=>sp)
             else
@@ -27,6 +26,7 @@ function branching_sim(pomdp::POMDP, policy::Policy, b::ScenarioBelief, steps::I
 
     next_r = 0.0
     for (o, scenarios) in odict
+        # @warn o
         bp = ScenarioBelief(scenarios, b.random_source, b.depth+1, o)
         if length(scenarios) == 1
             next_r += rollout(pomdp, policy, bp, steps-1, fval)
@@ -51,7 +51,10 @@ function rollout(pomdp::POMDP, policy::Policy, b0::ScenarioBelief, steps::Intege
         a = action(policy, b)
 
         rng = get_rng(b.random_source, k, b.depth)
+        # @show typeof(rng)
+        # @show rand(rng)
         sp, o, r = @gen(:sp, :o, :r)(pomdp, s, a, rng)
+        # @info (sp, o, r)
 
         r_total += disc*r
 
@@ -62,6 +65,7 @@ function rollout(pomdp::POMDP, policy::Policy, b0::ScenarioBelief, steps::Intege
         disc *= discount(pomdp)
         steps -= 1
     end
+    # @show r_total
 
     if steps == 0 && !isterminal(pomdp, s)
         r_total += disc*fval(pomdp, b)
