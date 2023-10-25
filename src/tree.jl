@@ -62,13 +62,13 @@ function expand!(D::DESPOT, b::Int, p::DESPOTPlanner)
     for a in actions(p.pomdp, belief)
         empty!(odict)
         rsum = 0.0
+
         for scen in D.scenarios[b]
             rng = get_rng(p.rs, first(scen), D.Delta[b])
             s = last(scen)
             if !isterminal(p.pomdp, s)
                 sp, o, r = @gen(:sp, :o, :r)(p.pomdp, s, a, rng)
                 rsum += r
-                
                 bp = get(odict, o, 0)
                 if bp == 0
                     push!(D.scenarios, Vector{Pair{Int, S}}())
@@ -78,7 +78,7 @@ function expand!(D::DESPOT, b::Int, p::DESPOTPlanner)
                 push!(D.scenarios[bp], first(scen)=>sp)
             end
         end
-        push!(D.ba_children, sort(collect(values(odict))))
+        push!(D.ba_children, collect(values(odict)))
         ba = length(D.ba_children)
         push!(D.ba_action, a)
         push!(D.children[b], ba)

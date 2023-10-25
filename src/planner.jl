@@ -19,6 +19,7 @@ function explore!(D::DESPOT, b::Int, p::DESPOTPlanner)
     while D.Delta[b] <= p.sol.D &&
         excess_uncertainty(D, b, p) > 0.0 &&
         !prune!(D, b, p)
+        
         if isempty(D.children[b]) # a leaf
             expand!(D, b, p)
         end
